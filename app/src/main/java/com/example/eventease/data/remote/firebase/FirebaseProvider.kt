@@ -6,7 +6,7 @@ import com.google.firebase.database.FirebaseDatabase
 
 object FirebaseProvider {
     val database: DatabaseReference by lazy {
-        FirebaseDatabase.getInstance("https://weaveon-f5b5e-default-rtdb.asia-southeast1.firebasedatabase.app/").reference
+        FirebaseDatabase.getInstance("https://eventease-4eab1-default-rtdb.asia-southeast1.firebasedatabase.app/").reference
     }
 
     val auth: FirebaseAuth by lazy {
