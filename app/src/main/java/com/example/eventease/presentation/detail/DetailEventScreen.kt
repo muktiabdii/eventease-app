@@ -64,7 +64,6 @@ fun DetailEventScreen(
                                 viewModel.onAttendClicked()
                             }
                         },
-                        enabled = true,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
@@ -99,6 +98,7 @@ fun DetailEventScreen(
                 is DetailEventState.Loading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
+
                 is DetailEventState.Error -> {
                     Text(
                         text = state.message,
@@ -106,74 +106,72 @@ fun DetailEventScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
+
                 is DetailEventState.Success -> {
                     val event = state.event
+                    val organizer = state.organizer
+                    val participants = state.participants
+
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(top = 0.dp)
                     ) {
-                        item {
-                            EventHeaderImage(imageUrl = event.imageUrl)
-                        }
+                        item { EventHeaderImage(imageUrl = event.imageUrl) }
+
                         item {
                             EventInfoSection(
                                 event = event,
                                 modifier = Modifier.padding(16.dp)
                             )
                         }
+
                         item {
                             HorizontalDivider(
                                 modifier = Modifier.padding(vertical = 16.dp),
                                 color = Color(0xFFD1D5DB)
                             )
                         }
+
                         item {
                             EventAboutSection(
                                 description = event.description,
                                 modifier = Modifier.padding(horizontal = 16.dp)
                             )
                         }
+
                         item {
                             HorizontalDivider(
                                 modifier = Modifier.padding(vertical = 16.dp),
                                 color = Color(0xFFD1D5DB)
                             )
                         }
+
                         item {
                             EventParticipantsSection(
-                                participantsCount = event.participants.size,
+                                participants = participants,
                                 totalCapacity = event.capacity.toIntOrNull() ?: 0,
                                 modifier = Modifier.padding(horizontal = 16.dp)
                             )
                         }
+
                         item {
                             HorizontalDivider(
                                 modifier = Modifier.padding(vertical = 16.dp),
                                 color = Color(0xFFD1D5DB)
                             )
                         }
+
                         item {
                             EventOrganizerSection(
+                                organizer = organizer,
                                 modifier = Modifier.padding(horizontal = 16.dp)
                             )
                         }
-                        item {
-                            Spacer(modifier = Modifier.height(24.dp))
-                        }
+
+                        item { Spacer(modifier = Modifier.height(24.dp)) }
                     }
                 }
             }
         }
     }
 }
-
-/*
-@Preview(showBackground = true)
-@Composable
-fun DetailEventScreenPreview() {
-   EventeaseTheme {
-        DetailEventScreen(
-            navController = rememberNavController()
-        )
-    }
-}*/

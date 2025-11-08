@@ -40,7 +40,7 @@ class ViewModelFactory(
             }
             modelClass.isAssignableFrom(DetailEventViewModel::class.java) -> {
                 val savedStateHandle = extras.createSavedStateHandle()
-                DetailEventViewModel(eventUseCase, savedStateHandle) as T
+                DetailEventViewModel(eventUseCase, userUseCase, savedStateHandle) as T
             }
             modelClass.isAssignableFrom(MyEventsViewModel::class.java) -> {
                 MyEventsViewModel(eventUseCase) as T

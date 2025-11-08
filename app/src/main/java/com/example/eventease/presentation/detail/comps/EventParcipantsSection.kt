@@ -6,6 +6,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,24 +18,23 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.eventease.R
+import com.example.eventease.domain.model.User
 
 @Composable
 fun EventParticipantsSection(
-    participantsCount: Int,
+    participants: List<User>,
     totalCapacity: Int,
     modifier: Modifier = Modifier
 ) {
-    val progress = if (totalCapacity > 0) {
-        participantsCount.toFloat() / totalCapacity.toFloat()
-    } else {
-        0f
-    }
+    val participantsCount = participants.size
+    val progress = if (totalCapacity > 0) participantsCount.toFloat() / totalCapacity else 0f
     val spotsRemaining = totalCapacity - participantsCount
 
     val maxAvatarsToShow = 4
-    val avatarsInList = participantsCount.coerceAtMost(maxAvatarsToShow)
-    val remainingCount = (participantsCount - avatarsInList).coerceAtLeast(0)
+    val avatarsToShow = participants.take(maxAvatarsToShow)
+    val remainingCount = (participantsCount - maxAvatarsToShow).coerceAtLeast(0)
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -53,7 +54,7 @@ fun EventParticipantsSection(
                 text = "$participantsCount/$totalCapacity",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = (Color(0xFF6B7280))
+                color = Color(0xFF6B7280)
             )
         }
 
@@ -61,12 +62,9 @@ fun EventParticipantsSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(-10.dp)
-            ) {
-                repeat(avatarsInList) {
-                    ParticipantAvatar(R.drawable.avatar)
+            Row(horizontalArrangement = Arrangement.spacedBy(-10.dp)) {
+                avatarsToShow.forEach { user ->
+                    ParticipantAvatar(user.photoUrl)
                 }
             }
 
@@ -84,13 +82,6 @@ fun EventParticipantsSection(
                         fontWeight = FontWeight.Bold
                     )
                 }
-
-                Text(
-                    text = "and $remainingCount others are going",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
             }
         }
 
@@ -114,14 +105,27 @@ fun EventParticipantsSection(
 }
 
 @Composable
-private fun ParticipantAvatar(drawableRes: Int) {
-    Image(
-        painter = painterResource(id = drawableRes),
-        contentDescription = "Participant Avatar",
-        modifier = Modifier
-            .size(32.dp)
-            .clip(CircleShape)
-            .border(2.dp, Color.White, CircleShape),
-        contentScale = ContentScale.Crop
-    )
+private fun ParticipantAvatar(photoUrl: String) {
+    if (photoUrl.isNotEmpty()) {
+        AsyncImage(
+            model = photoUrl,
+            contentDescription = "Participant Avatar",
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .border(2.dp, Color.White, CircleShape),
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        Icon(
+            imageVector = Icons.Default.AccountCircle,
+            contentDescription = "Default User Icon",
+            tint = Color(0xFF4F46E5),
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFE0E7FF), CircleShape)
+                .border(2.dp, Color.White, CircleShape)
+        )
+    }
 }

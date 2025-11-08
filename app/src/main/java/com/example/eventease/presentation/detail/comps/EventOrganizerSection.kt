@@ -12,10 +12,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.eventease.R
+import com.example.eventease.domain.model.User
 
 @Composable
-fun EventOrganizerSection(modifier: Modifier = Modifier) {
+fun EventOrganizerSection(
+    organizer: User?,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -27,34 +32,40 @@ fun EventOrganizerSection(modifier: Modifier = Modifier) {
         )
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.avatar),
+            if (organizer?.photoUrl?.isNotEmpty() == true) {
+                AsyncImage(
+                    model = organizer.photoUrl,
                     contentDescription = "Organizer Avatar",
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
-                Column {
-                    Text(
-                        text = "TechEvents Inc.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "Event Organizer",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.avatar),
+                    contentDescription = "Default Organizer Avatar",
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            Column {
+                Text(
+                    text = organizer?.name ?: "Unknown Organizer",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = organizer?.email ?: "Organizer",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
