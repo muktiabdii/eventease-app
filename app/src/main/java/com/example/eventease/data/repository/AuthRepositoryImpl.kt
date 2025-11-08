@@ -38,10 +38,8 @@ class AuthRepositoryImpl: AuthRepository {
         passwordConfirmation: String
     ): Unit = withContext(Dispatchers.IO) {
         try {
-            Log.d("AuthRepository", "📝 Mulai register user: $name ($email)")
             val result = auth.createUserWithEmailAndPassword(email, password).await()
             val user = result.user ?: throw Exception("Gagal membuat akun")
-            Log.d("AuthRepository", "✅ Akun FirebaseAuth berhasil dibuat. UID: ${user.uid}")
 
             val userId = user.uid
             val userRef = database.child("users").child(userId)
@@ -51,16 +49,10 @@ class AuthRepositoryImpl: AuthRepository {
                 "email" to email
             )
 
-            Log.d("AuthRepository", "📦 Menulis data user ke Realtime Database...")
             userRef.setValue(userData).await()
-            Log.d("AuthRepository", "🎉 Data user berhasil disimpan di Realtime Database")
 
         } catch (e: Exception) {
-            Log.e("AuthRepository", "💥 Error register: ${e.message}")
-            auth.currentUser?.let {
-                Log.w("AuthRepository", "🧹 Menghapus akun karena error...")
-                it.delete().await()
-            }
+            auth.currentUser?.delete()?.await()
             throw Exception(getLocalizedErrorMessage(e.message))
         }
     }

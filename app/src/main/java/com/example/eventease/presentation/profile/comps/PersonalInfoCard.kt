@@ -17,8 +17,6 @@ fun PersonalInfoCard(
     onFullNameChange: (String) -> Unit,
     email: String,
     onEmailChange: (String) -> Unit,
-    phone: String,
-    onPhoneChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -47,13 +45,6 @@ fun PersonalInfoCard(
                 label = "Email Address",
                 value = email,
                 onValueChange = onEmailChange,
-                readOnly = true
-            )
-
-            ProfileTextField(
-                label = "Phone Number",
-                value = phone,
-                onValueChange = onPhoneChange,
                 readOnly = true
             )
         }

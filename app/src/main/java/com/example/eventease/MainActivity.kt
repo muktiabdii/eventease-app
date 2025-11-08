@@ -37,6 +37,7 @@ import com.example.eventease.presentation.home.HomeViewModel
 import com.example.eventease.presentation.myevents.MyEventsScreen
 import com.example.eventease.presentation.myevents.MyEventsViewModel
 import com.example.eventease.presentation.profile.ProfileScreen
+import com.example.eventease.presentation.profile.UserViewModel
 import com.example.eventease.presentation.splash.SplashScreen
 import com.example.eventease.presentation.splash.SplashViewModel
 import com.example.eventease.ui.theme.EventeaseTheme
@@ -49,7 +50,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             EventeaseTheme {
 
-                val userRepo = UserRepositoryImpl(UserPreferencesManager(this))
+                val userRepo = UserRepositoryImpl(UserPreferencesManager(this), context = this)
                 val userUseCase = UserUseCase(userRepo)
                 val authRepo = AuthRepositoryImpl()
                 val authUseCase = AuthUseCase(authRepo)
@@ -59,6 +60,7 @@ class MainActivity : ComponentActivity() {
                 val eventUseCase = EventUseCase(eventRepo)
                 val homeViewModel = HomeViewModel(eventUseCase)
                 val createEventViewModel = CreateEventViewModel(eventUseCase)
+                val userViewModel = UserViewModel(userUseCase)
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
@@ -189,7 +191,11 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(NavDestination.PROFILE) {
-                            ProfileScreen(navController = navController)
+                            ProfileScreen(
+                                navController = navController,
+                                rootNavController = navController,
+                                viewModel = userViewModel
+                            )
                         }
                     }
                 }

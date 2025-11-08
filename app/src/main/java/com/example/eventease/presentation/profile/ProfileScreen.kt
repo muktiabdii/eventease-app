@@ -1,35 +1,47 @@
 package com.example.eventease.presentation.profile
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.example.eventease.NavDestination
 import com.example.eventease.presentation.common.TopBar
 import com.example.eventease.presentation.profile.comps.PersonalInfoCard
 import com.example.eventease.presentation.profile.comps.ProfileHeader
-import com.example.eventease.presentation.profile.comps.SecurityCard
 
 @Composable
 fun ProfileScreen(
-    navController: NavController
+    viewModel: UserViewModel,
+    navController: NavController,
+    rootNavController: NavController
 ) {
-    var fullName by rememberSaveable { mutableStateOf("Sarah Johnson") }
-    var email by rememberSaveable { mutableStateOf("sarah.johnson@email.com") }
-    var phone by rememberSaveable { mutableStateOf("+1 (555) 123-4567") }
-    var password by rememberSaveable { mutableStateOf("••••••••••") }
+    val userState by viewModel.userState.collectAsState()
+
+    // simpan foto baru yang dipilih (sementara, sebelum dikirim ke server)
+    var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+
+    // image picker launcher
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            selectedImageUri = uri // simpan ke state lokal dulu
+            viewModel.setTempPhoto(uri.toString()) // opsional: tampilkan di UI
+        }
+    }
 
     Scaffold(
         containerColor = Color(0xFFF9FAFB),
@@ -45,40 +57,42 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = 16.dp,
+                bottom = 100.dp // padding biar nggak ketutupan bottom bar
+            ),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             item {
                 ProfileHeader(
-                    name = fullName,
-                    email = email,
-                    onEditPhoto = { /* TODO: Handle Ganti Foto */ }
+                    name = userState.name,
+                    email = userState.email,
+                    photoUrl = selectedImageUri?.toString() ?: userState.photoUrl,
+                    onEditPhoto = { imagePickerLauncher.launch("image/*") }
                 )
             }
 
             item {
                 PersonalInfoCard(
-                    fullName = fullName,
-                    onFullNameChange = { fullName = it },
-                    email = email,
-                    onEmailChange = { email = it },
-                    phone = phone,
-                    onPhoneChange = { phone = it }
-                )
-            }
-
-            item {
-                SecurityCard(
-                    password = password,
-                    onPasswordChange = { password = it },
-                    onChangeClick = { /* TODO: Navigasi ke ganti password */ }
+                    fullName = userState.name,
+                    onFullNameChange = { viewModel.setName(it) },
+                    email = userState.email,
+                    onEmailChange = { viewModel.setEmail(it) },
                 )
             }
 
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Button(
-                        onClick = { /* TODO: Handle Save */ },
+                        onClick = {
+                            viewModel.editProfile(
+                                name = userState.name,
+                                email = userState.email,
+                                imageUri = selectedImageUri
+                            )
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
@@ -95,7 +109,14 @@ fun ProfileScreen(
                     }
 
                     OutlinedButton(
-                        onClick = { /* TODO: Handle Logout */ },
+                        onClick = {
+                            viewModel.logout {
+                                rootNavController.navigate(NavDestination.LOGIN) {
+                                    popUpTo(NavDestination.HOME) { inclusive = true }
+                                    launchSingleTop = true
+                                }
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
@@ -121,10 +142,4 @@ fun ProfileScreen(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProfileScreenPreview() {
-    ProfileScreen(navController = rememberNavController())
 }

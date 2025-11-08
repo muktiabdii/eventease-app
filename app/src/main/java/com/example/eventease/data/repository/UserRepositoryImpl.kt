@@ -1,18 +1,25 @@
 package com.example.eventease.data.repository
 
 import android.content.Context
+import android.net.Uri
 import com.example.eventease.cache.UserData
 import com.example.eventease.data.datastore.UserPreferencesManager
+import com.example.eventease.data.remote.cloudinary.CloudinaryService
 import com.example.eventease.data.remote.firebase.FirebaseProvider
 import com.example.eventease.domain.model.User
 import com.example.eventease.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 
-class UserRepositoryImpl(private val userPreferencesManager: UserPreferencesManager, ) : UserRepository {
+class UserRepositoryImpl(
+    private val userPreferencesManager: UserPreferencesManager,
+    private val context: Context
+) : UserRepository {
 
     private val database = FirebaseProvider.database
     private val auth = FirebaseProvider.auth
+    private val cloudinaryService = CloudinaryService(context)
+
 
     // function untuk mendapatkan user dari remote
     override suspend fun getUserFromRemote(uid: String): User? {
@@ -21,9 +28,9 @@ class UserRepositoryImpl(private val userPreferencesManager: UserPreferencesMana
     }
 
     // function untuk mendapatkan user dari cache
-    override suspend fun saveUserToCache(uid: String, name: String, email: String) {
-        userPreferencesManager.saveUser(uid, name, email)
-        UserData.set(uid, name, email)
+    override suspend fun saveUserToCache(uid: String, name: String, email: String, photoUrl: String) {
+        userPreferencesManager.saveUser(uid, name, email, photoUrl)
+        UserData.set(uid, name, email, photoUrl)
     }
 
     // function untuk mendapatkan user uid dari cache
@@ -39,31 +46,43 @@ class UserRepositoryImpl(private val userPreferencesManager: UserPreferencesMana
         FirebaseProvider.auth.signOut()
     }
 
+
     // function untuk edit profile
-    override suspend fun editProfile(uid: String, name: String, email: String): Boolean {
+    override suspend fun editProfile(
+        uid: String,
+        name: String,
+        email: String,
+        imageUri: Uri?
+    ): Boolean {
         try {
+            val photoUrl = if (imageUri != null) {
+                cloudinaryService.uploadImage(imageUri)
+            } else {
+                ""
+            }
 
             // update ke firebase
             val userUpdates = hashMapOf<String, Any>(
                 "uid" to uid,
                 "name" to name,
-                "email" to email
+                "email" to email,
+                "photoUrl" to photoUrl
             )
             database.child("users").child(uid).updateChildren(userUpdates).await()
 
-            // update di datastore
-            userPreferencesManager.saveUser(uid, name, email)
+            // update ke datastore
+            userPreferencesManager.saveUser(uid, name, email, photoUrl)
 
-            // update di cache
-            UserData.set(uid, name, email)
+            // update ke cache
+            UserData.set(uid, name, email, photoUrl)
+
             return true
-        }
-
-        catch (e: Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
             throw e
         }
     }
+
 
     // function untuk hapus akun
     override suspend fun deleteAccount(uid: String) {

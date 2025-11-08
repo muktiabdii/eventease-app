@@ -59,7 +59,7 @@ class AuthViewModel(
     suspend fun loadUser(uid: String) {
         val user = userUseCase.getUserFromRemote(uid)
         if (user != null) {
-            userUseCase.saveUserToCache(user.uid, user.name, user.email)
+            userUseCase.saveUserToCache(user.uid, user.name, user.email, user.photoUrl)
         }
     }
 

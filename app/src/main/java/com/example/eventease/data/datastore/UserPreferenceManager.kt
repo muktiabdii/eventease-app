@@ -7,7 +7,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-// datastore preferences
 private val Context.dataStore by preferencesDataStore("app_preferences")
 
 class UserPreferencesManager(private val context: Context) {
@@ -16,38 +15,34 @@ class UserPreferencesManager(private val context: Context) {
         private val KEY_UID = stringPreferencesKey("uid")
         private val KEY_NAME = stringPreferencesKey("name")
         private val KEY_EMAIL = stringPreferencesKey("email")
+        private val KEY_PHOTO = stringPreferencesKey("photo")
     }
 
     // save user info
-    suspend fun saveUser(uid: String, name: String, email: String) {
+    suspend fun saveUser(uid: String, name: String, email: String, photoUrl: String = "") {
         context.dataStore.edit { preferences ->
             preferences[KEY_UID] = uid
             preferences[KEY_NAME] = name
             preferences[KEY_EMAIL] = email
+            preferences[KEY_PHOTO] = photoUrl
         }
     }
 
-    // clear user info
+    // save hanya foto
+    suspend fun updatePhoto(photoUrl: String) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_PHOTO] = photoUrl
+        }
+    }
+
     suspend fun clear() {
         context.dataStore.edit { preferences ->
-            preferences.remove(KEY_UID)
-            preferences.remove(KEY_NAME)
-            preferences.remove(KEY_EMAIL)
+            preferences.clear()
         }
     }
 
-    // get user uid flow
-    val userUid: Flow<String?> = context.dataStore.data.map { prefs ->
-        prefs[KEY_UID]
-    }
-
-    // get user name flow
-    val userName: Flow<String?> = context.dataStore.data.map { prefs ->
-        prefs[KEY_NAME]
-    }
-
-    // get user email flow
-    val userEmail: Flow<String?> = context.dataStore.data.map { prefs ->
-        prefs[KEY_EMAIL]
-    }
+    val userUid: Flow<String?> = context.dataStore.data.map { it[KEY_UID] }
+    val userName: Flow<String?> = context.dataStore.data.map { it[KEY_NAME] }
+    val userEmail: Flow<String?> = context.dataStore.data.map { it[KEY_EMAIL] }
+    val userPhoto: Flow<String?> = context.dataStore.data.map { it[KEY_PHOTO] }
 }
