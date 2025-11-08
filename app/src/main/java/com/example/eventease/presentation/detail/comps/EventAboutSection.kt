@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun EventAboutSection(
-    description: String, // <-- Terima deskripsi
+    description: String,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -26,7 +26,7 @@ fun EventAboutSection(
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = description, // <-- Tampilkan deskripsi dinamis
+            text = description,
             style = MaterialTheme.typography.bodyMedium,
             lineHeight = 22.sp
         )

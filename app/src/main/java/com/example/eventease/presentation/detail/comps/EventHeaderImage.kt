@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil.compose.SubcomposeAsyncImage // <-- Import Coil
+import coil.compose.SubcomposeAsyncImage
 
 @Composable
 fun EventHeaderImage(
@@ -30,9 +30,7 @@ fun EventHeaderImage(
             }
         },
         error = {
-            // TODO: Tampilkan placeholder jika gambar gagal dimuat
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                // ...
             }
         }
     )

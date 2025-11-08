@@ -7,12 +7,10 @@ import kotlinx.coroutines.flow.Flow
 
 class SplashViewModel(private val userUseCase: UserUseCase) : ViewModel() {
 
-    // function untuk mendapatkan user uid dari cache
     fun getUserUidFlow(): Flow<String?> {
         return userUseCase.getUserUidFlow()
     }
 
-    // function untuk load user
     suspend fun loadUser(uid: String) {
         val user = userUseCase.getUserFromRemote(uid)
         if (user != null) {

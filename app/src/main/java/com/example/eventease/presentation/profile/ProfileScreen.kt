@@ -29,17 +29,13 @@ fun ProfileScreen(
     rootNavController: NavController
 ) {
     val userState by viewModel.userState.collectAsState()
-
-    // simpan foto baru yang dipilih (sementara, sebelum dikirim ke server)
     var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
-
-    // image picker launcher
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
-            selectedImageUri = uri // simpan ke state lokal dulu
-            viewModel.setTempPhoto(uri.toString()) // opsional: tampilkan di UI
+            selectedImageUri = uri
+            viewModel.setTempPhoto(uri.toString())
         }
     }
 
@@ -61,7 +57,7 @@ fun ProfileScreen(
                 start = 16.dp,
                 end = 16.dp,
                 top = 16.dp,
-                bottom = 100.dp // padding biar nggak ketutupan bottom bar
+                bottom = 100.dp
             ),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {

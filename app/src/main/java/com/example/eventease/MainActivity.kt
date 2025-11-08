@@ -165,7 +165,7 @@ class MainActivity : ComponentActivity() {
                             CreateEventScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 navController = navController,
-                                viewModel = createEventViewModel // <-- Berikan ViewModel
+                                viewModel = createEventViewModel
                             )
                         }
                         composable(

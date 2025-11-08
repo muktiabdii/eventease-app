@@ -6,7 +6,6 @@ import kotlinx.coroutines.withContext
 
 class AuthUseCase(private val authRepository: AuthRepository) {
 
-    // function login
     suspend fun login(
         email: String,
         password: String
@@ -26,7 +25,6 @@ class AuthUseCase(private val authRepository: AuthRepository) {
         }
     }
 
-    // function register
     suspend fun register(
         name: String,
         email: String,
@@ -45,7 +43,6 @@ class AuthUseCase(private val authRepository: AuthRepository) {
         }
     }
 
-    // function validasi login
     private fun validateLogin(email: String, password: String): String? {
         if (email.trim().isEmpty() || password.trim().isEmpty()) {
             return "Email dan password harus diisi"
@@ -57,7 +54,6 @@ class AuthUseCase(private val authRepository: AuthRepository) {
         return null
     }
 
-    // function validasi register
     private fun validateRegister(name: String, email: String, password: String, passwordConfirmation: String): String? {
         if (name.trim().isEmpty() || email.trim().isEmpty() || password.trim().isEmpty() || passwordConfirmation.trim().isEmpty()) {
             return "Semua field harus diisi"

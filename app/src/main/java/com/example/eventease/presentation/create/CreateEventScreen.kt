@@ -30,7 +30,7 @@ import java.util.Calendar
 @Composable
 fun CreateEventScreen(
     navController: NavController,
-    viewModel: CreateEventViewModel, // Terima ViewModel
+    viewModel: CreateEventViewModel,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -49,14 +49,12 @@ fun CreateEventScreen(
         is24Hour = false
     )
 
-    // Image Picker Launcher
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         viewModel.onImagePicked(uri)
     }
 
-    // Handle UI State changes (Loading, Success, Error)
     LaunchedEffect(uiState) {
         when (val state = uiState) {
             is CreateEventState.Success -> {
@@ -137,10 +135,8 @@ fun CreateEventScreen(
             item {
                 PosterPickerSection(
                     modifier = Modifier.padding(top = 16.dp),
-                    // Tampilkan gambar yang dipilih (jika ada)
                     imageUri = viewModel.imageUri,
                     onClick = {
-                        // Buka galeri gambar
                         imagePickerLauncher.launch("image/*")
                     }
                 )
@@ -149,8 +145,8 @@ fun CreateEventScreen(
             item {
                 EventFormSection(
                     label = "Event Title",
-                    value = viewModel.title, // Gunakan state dari ViewModel
-                    onValueChange = { viewModel.onTitleChange(it) }, // Panggil fungsi ViewModel
+                    value = viewModel.title,
+                    onValueChange = { viewModel.onTitleChange(it) },
                     placeholder = "Enter event title"
                 )
             }
@@ -177,7 +173,7 @@ fun CreateEventScreen(
 
             item {
                 EventDateTimePicker(
-                    dateText = viewModel.dateText, // TODO: Implement date/time picker logic
+                    dateText = viewModel.dateText,
                     timeText = viewModel.timeText,
                     onDateClick = { showDatePicker = true },
                     onTimeClick = { showTimePicker = true }
@@ -197,9 +193,8 @@ fun CreateEventScreen(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    // Panggil saveEvent di ViewModel
                     onClick = { viewModel.saveEvent() },
-                    enabled = uiState != CreateEventState.Loading, // Nonaktifkan saat loading
+                    enabled = uiState != CreateEventState.Loading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),

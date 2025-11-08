@@ -18,7 +18,6 @@ class UserPreferencesManager(private val context: Context) {
         private val KEY_PHOTO = stringPreferencesKey("photo")
     }
 
-    // save user info
     suspend fun saveUser(uid: String, name: String, email: String, photoUrl: String = "") {
         context.dataStore.edit { preferences ->
             preferences[KEY_UID] = uid
@@ -28,7 +27,6 @@ class UserPreferencesManager(private val context: Context) {
         }
     }
 
-    // save hanya foto
     suspend fun updatePhoto(photoUrl: String) {
         context.dataStore.edit { preferences ->
             preferences[KEY_PHOTO] = photoUrl

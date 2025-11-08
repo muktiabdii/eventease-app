@@ -22,7 +22,6 @@ class EventRepositoryImpl(context: Context) : EventRepository {
     private val cloudinaryService = CloudinaryService(context)
 
     override fun getAllEvents(): Flow<Result<List<Event>>> = callbackFlow {
-        // Menggunakan snapshotListener agar data update secara real-time
         val snapshotListener = eventsCollection.addSnapshotListener { snapshot, error ->
 
             if (error != null) {
@@ -58,7 +57,6 @@ class EventRepositoryImpl(context: Context) : EventRepository {
         }
     }
     override fun getEventDetails(eventId: String): Flow<Result<Event>> = callbackFlow {
-        // Gunakan snapshotListener agar data (seperti jumlah peserta) update real-time
         val docRef = eventsCollection.document(eventId)
         val listener = docRef.addSnapshotListener { snapshot, error ->
             if (error != null) {
@@ -111,10 +109,9 @@ class EventRepositoryImpl(context: Context) : EventRepository {
             return flowOf(Result.failure(Exception("User not logged in")))
         }
 
-        // Gunakan callbackFlow untuk data real-time
         return callbackFlow {
             val snapshotListener = eventsCollection
-                .whereEqualTo("creatorId", userId) // Filter berdasarkan creatorId
+                .whereEqualTo("creatorId", userId)
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) {
                         trySend(Result.failure(error))
@@ -156,7 +153,7 @@ class EventRepositoryImpl(context: Context) : EventRepository {
 
         return callbackFlow {
             val snapshotListener = eventsCollection
-                .whereArrayContains("participants", userId) // Filter berdasarkan array participants
+                .whereArrayContains("participants", userId)
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) {
                         trySend(Result.failure(error))

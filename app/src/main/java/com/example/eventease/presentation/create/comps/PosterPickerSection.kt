@@ -26,7 +26,7 @@ import coil.compose.AsyncImage
 @Composable
 fun PosterPickerSection(
     modifier: Modifier = Modifier,
-    imageUri: Uri? = null, // <-- Terima Uri gambar
+    imageUri: Uri? = null,
     onClick: () -> Unit
 ) {
     val shape = RoundedCornerShape(12.dp)

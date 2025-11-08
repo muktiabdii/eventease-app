@@ -9,11 +9,9 @@ import kotlinx.coroutines.withContext
 
 class AuthRepositoryImpl: AuthRepository {
 
-    // inisiasi firebase auth dan database
     private val auth = FirebaseProvider.auth
     private val database = FirebaseProvider.database
 
-    // function login
     override suspend fun login(
         email: String,
         password: String
@@ -30,7 +28,6 @@ class AuthRepositoryImpl: AuthRepository {
     }
 
 
-    // function register
     override suspend fun register(
         name: String,
         email: String,
@@ -58,7 +55,6 @@ class AuthRepositoryImpl: AuthRepository {
     }
 
 
-    // function untuk mendapatkan pesan error yang sesuai
     private fun getLocalizedErrorMessage(errorMessage: String?): String {
         return when {
             errorMessage?.contains("The email address is badly formatted") == true ->

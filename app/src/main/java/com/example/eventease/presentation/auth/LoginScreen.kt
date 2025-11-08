@@ -68,7 +68,6 @@ fun LoginScreen(
         ) {
             Spacer(modifier = Modifier.height(60.dp))
 
-            // Logo
             Box(
                 modifier = Modifier
                     .size(140.dp),
@@ -83,7 +82,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Title
             Text(
                 text = "Login EventEase",
                 fontFamily = FontFamily(Font(R.font.poppins_semibold)),
@@ -94,7 +92,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Email TextField
             AuthTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -104,7 +101,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Password TextField
             AuthTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -115,7 +111,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Login Button
             AuthButton(
                 text = "Login",
                 onClick = { viewModel.login(email, password) },
@@ -124,7 +119,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Register Section
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically

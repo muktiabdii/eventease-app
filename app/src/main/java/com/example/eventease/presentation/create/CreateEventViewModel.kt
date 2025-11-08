@@ -15,7 +15,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-// State untuk UI (Loading, Success, Error)
 sealed class CreateEventState {
     object Idle : CreateEventState()
     object Loading : CreateEventState()
@@ -25,16 +24,14 @@ sealed class CreateEventState {
 
 class CreateEventViewModel(private val eventUseCase: EventUseCase) : ViewModel() {
 
-    // State untuk form fields
     var title by mutableStateOf("")
     var description by mutableStateOf("")
     var location by mutableStateOf("")
     var capacity by mutableStateOf("")
     var dateText by mutableStateOf("mm/dd/yyyy")
     var timeText by mutableStateOf("--:-- --")
-    var imageUri by mutableStateOf<Uri?>(null) // State untuk menyimpan Uri gambar
+    var imageUri by mutableStateOf<Uri?>(null)
 
-    // State untuk UI
     private val _uiState = MutableStateFlow<CreateEventState>(CreateEventState.Idle)
     val uiState: StateFlow<CreateEventState> = _uiState
 
@@ -88,7 +85,7 @@ class CreateEventViewModel(private val eventUseCase: EventUseCase) : ViewModel()
                 description = description,
                 location = location,
                 date = "$dateText at $timeText",
-                capacity = capacity // <-- Perbaikan dari bug sebelumnya
+                capacity = capacity
             )
 
             val result = eventUseCase.createEvent(event, localImageUri)

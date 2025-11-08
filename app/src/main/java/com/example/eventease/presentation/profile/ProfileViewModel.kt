@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-// general state
 data class State(
     val uid: String = "",
     val name: String = "",
@@ -20,11 +19,9 @@ data class State(
 
 class UserViewModel(private val userUseCase: UserUseCase) : ViewModel() {
 
-    // user state
     private val _userState = MutableStateFlow(State())
     val userState: StateFlow<State> = _userState
 
-    // function set user state
     fun setName(name: String) {
         _userState.value = _userState.value.copy(name = name)
     }
@@ -33,12 +30,10 @@ class UserViewModel(private val userUseCase: UserUseCase) : ViewModel() {
         _userState.value = _userState.value.copy(email = email)
     }
 
-    // launch loadUserData saat ViewModel dibuat
     init {
         loadUserData()
     }
 
-    // function load user data
     fun loadUserData() {
         viewModelScope.launch {
             _userState.value = State(
@@ -50,17 +45,14 @@ class UserViewModel(private val userUseCase: UserUseCase) : ViewModel() {
         }
     }
 
-    // function refresh user data
     fun refreshUserData() {
         loadUserData()
     }
 
-    // function set temp photo
     fun setTempPhoto(photoUrl: String) {
         _userState.value = _userState.value.copy(photoUrl = photoUrl)
     }
 
-    // function untuk edit profile
     fun editProfile(name: String, email: String, imageUri: Uri? = null) {
         viewModelScope.launch {
             try {
@@ -79,7 +71,6 @@ class UserViewModel(private val userUseCase: UserUseCase) : ViewModel() {
         }
     }
 
-    // function logout
     fun logout(onComplete: (() -> Unit)? = null) {
         viewModelScope.launch {
             userUseCase.logout()

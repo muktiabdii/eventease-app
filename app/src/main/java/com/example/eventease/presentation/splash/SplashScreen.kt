@@ -31,24 +31,19 @@ fun SplashScreen(
     var startAnimation by remember { mutableStateOf(false) }
     var hasNavigated by remember { mutableStateOf(false) }
 
-    // animasi opacity dari 0 ke 1
     val alphaAnim = animateFloatAsState(
         targetValue = if (startAnimation) 1f else 0f,
         animationSpec = tween(durationMillis = 1500),
         label = "fadeAnimation"
     )
 
-    // mulai animasi setelah composable muncul
     LaunchedEffect(Unit) {
         startAnimation = true
 
-        // delay sebentar biar animasi jalan dulu
         delay(1500)
 
-        // Ambil user UID dari cache
         viewModel.getUserUidFlow().collectLatest { uid ->
             if (uid != null && uid.isNotEmpty()) {
-                // kalau ada UID, load data user dari remote
                 viewModel.loadUser(uid)
                 if (!hasNavigated) {
                     hasNavigated = true
@@ -74,9 +69,8 @@ fun SplashScreen(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .padding(horizontal = 32.dp)
-                .alpha(alphaAnim.value) // terapkan animasi fade
+                .alpha(alphaAnim.value)
         ) {
-            // Logo
             Image(
                 painter = painterResource(id = R.drawable.logo_event_ease),
                 contentDescription = "EventEase Logo",
@@ -85,7 +79,6 @@ fun SplashScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // App Name
             Text(
                 text = "EventEase",
                 fontFamily = FontFamily(Font(R.font.poppins_semibold)),
@@ -96,7 +89,6 @@ fun SplashScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Tagline
             Text(
                 text = "Connect. Create. Celebrate.",
                 fontFamily = FontFamily(Font(R.font.poppins_regular)),

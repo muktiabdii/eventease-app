@@ -20,7 +20,7 @@ import com.example.eventease.data.domain.model.Event
 
 @Composable
 fun EventInfoSection(
-    event: Event, // <-- Terima objek Event
+    event: Event,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -28,12 +28,11 @@ fun EventInfoSection(
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Text(
-            text = event.title, // <-- Data Dinamis
+            text = event.title,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
 
-        // Pisahkan tanggal dan waktu dari string "event.date"
         val (date, time) = try {
             val parts = event.date.split(" at ")
             (parts.getOrNull(0) ?: "N/A") to (parts.getOrNull(1) ?: "N/A")
@@ -43,15 +42,15 @@ fun EventInfoSection(
 
         EventInfoRow(
             icon = Icons.Default.DateRange,
-            text = date // <-- Data Dinamis
+            text = date
         )
         EventInfoRow(
             icon = Icons.Default.AccessTime,
-            text = time // <-- Data Dinamis
+            text = time
         )
         EventInfoRow(
             icon = Icons.Default.LocationOn,
-            text = event.location // <-- Data Dinamis
+            text = event.location
         )
     }
 }

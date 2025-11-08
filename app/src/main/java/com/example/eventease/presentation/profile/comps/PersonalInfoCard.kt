@@ -51,10 +51,6 @@ fun PersonalInfoCard(
     }
 }
 
-/**
- * Composable kustom privat untuk field di halaman profil.
- * Terdiri dari Text (label) di atas OutlinedTextField.
- */
 @Composable
 private fun ProfileTextField(
     label: String,
@@ -65,17 +61,15 @@ private fun ProfileTextField(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp) // Jarak antara label & field
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 1. Label
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium, // Anda bisa sesuaikan style
+            style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Normal,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        // 2. Field
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -83,18 +77,15 @@ private fun ProfileTextField(
             readOnly = readOnly,
             textStyle = TextStyle(
                 fontSize = 16.sp,
-                // Teks menjadi abu-abu jika readOnly
                 color = if (readOnly) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
             ),
-            shape = RoundedCornerShape(16.dp), // Sudut lebih bulat
+            shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                // Latar belakang field putih
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White,
                 disabledContainerColor = Color.White,
-                // Warna border
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f) // Border abu-abu tipis
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
             ),
             singleLine = true
         )

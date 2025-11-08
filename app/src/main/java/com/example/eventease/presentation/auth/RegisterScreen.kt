@@ -78,7 +78,6 @@ fun RegisterScreen(
                 .background(Color.White)
                 .padding(top = 24.dp)
         ) {
-            // Tombol back (posisi kiri)
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Back",
@@ -89,7 +88,6 @@ fun RegisterScreen(
                     .clickable { onBackClick() }
             )
 
-            // Teks di tengah
             Text(
                 text = "Create Account",
                 fontFamily = FontFamily(Font(R.font.poppins_semibold)),
@@ -99,7 +97,6 @@ fun RegisterScreen(
             )
         }
 
-        // 🖼️ Header Image
         Image(
             painter = painterResource(id = R.drawable.img_header_register),
             contentDescription = "Register Header",
@@ -116,7 +113,6 @@ fun RegisterScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
         ) {
-            // Title
             Text(
                 text = "Join EventEase",
                 fontFamily = FontFamily(Font(R.font.poppins_bold)),
@@ -128,7 +124,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Subtitle
             Text(
                 text = "Create your account to discover and attend amazing events",
                 fontFamily = FontFamily(Font(R.font.poppins_regular)),
@@ -140,7 +135,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Full Name
             Text(
                 text = "Full Name",
                 fontFamily = FontFamily(Font(R.font.poppins_medium)),
@@ -157,7 +151,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Email
             Text(
                 text = "Email",
                 fontFamily = FontFamily(Font(R.font.poppins_medium)),
@@ -174,7 +167,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Password
             Text(
                 text = "Password",
                 fontFamily = FontFamily(Font(R.font.poppins_medium)),
@@ -192,7 +184,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Confirm Password
             Text(
                 text = "Confirm Password",
                 fontFamily = FontFamily(Font(R.font.poppins_medium)),
@@ -210,7 +201,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Register Button
             AuthButton(
                 text = "Create Account",
                 onClick = { viewModel.register(fullName, email, password, confirmPassword) },
@@ -219,7 +209,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Login Section
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,

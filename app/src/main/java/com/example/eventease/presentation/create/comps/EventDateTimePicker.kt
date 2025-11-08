@@ -27,7 +27,6 @@ fun EventDateTimePicker(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Bagian Date
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -44,7 +43,6 @@ fun EventDateTimePicker(
             )
         }
 
-        // Bagian Time
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(8.dp)
