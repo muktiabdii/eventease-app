@@ -16,9 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale // <-- Import ditambahkan
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.SubcomposeAsyncImage // <-- Import Coil
 import com.example.eventease.data.domain.model.Event
 
 @Composable
@@ -29,7 +31,6 @@ fun EventCard(
     onDelete: (() -> Unit)? = null
 ) {
     Box(modifier = modifier) {
-
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -50,20 +51,14 @@ fun EventCard(
                 onClick = onDelete,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .offset(x = (8).dp, y = (-8).dp)
-                    .size(30.dp)
-                    .background(Color.White, CircleShape)
-                    .border(
-                        width = 1.dp,
-                        color = Color.Black.copy(alpha = 0.2f),
-                        shape = CircleShape
-                    )
+                    .size(24.dp)
+                    .background(Color(0xFFE53935), CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,
                     contentDescription = "Delete Event",
-                    tint = Color.Red,
-                    modifier = Modifier.size(25.dp)
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }
@@ -78,18 +73,17 @@ private fun EventImage(event: Event) {
             .height(180.dp)
             .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF6366F1),
-                            Color(0xFF8B5CF6),
-                            Color(0xFFEC4899)
-                        )
-                    )
-                )
+        SubcomposeAsyncImage(
+            model = event.imageUrl,
+            contentDescription = event.title,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+            loading = {
+                GradientPlaceholder()
+            },
+            error = {
+                GradientPlaceholder()
+            }
         )
         Box(
             modifier = Modifier
@@ -104,6 +98,23 @@ private fun EventImage(event: Event) {
                 )
         )
     }
+}
+
+@Composable
+private fun GradientPlaceholder() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF6366F1),
+                        Color(0xFF8B5CF6),
+                        Color(0xFFEC4899)
+                    )
+                )
+            )
+    )
 }
 
 @Composable

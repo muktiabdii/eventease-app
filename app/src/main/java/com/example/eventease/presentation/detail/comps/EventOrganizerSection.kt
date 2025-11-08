@@ -56,10 +56,6 @@ fun EventOrganizerSection(modifier: Modifier = Modifier) {
                     )
                 }
             }
-
-            OutlinedButton(onClick = { /* TODO: Handle Follow */ }) {
-                Text("Follow")
-            }
         }
     }
 }

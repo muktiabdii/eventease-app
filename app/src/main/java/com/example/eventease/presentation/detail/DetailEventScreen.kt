@@ -7,26 +7,29 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.eventease.presentation.detail.comps.EventAboutSection
 import com.example.eventease.presentation.detail.comps.EventHeaderImage
 import com.example.eventease.presentation.detail.comps.EventInfoSection
 import com.example.eventease.presentation.detail.comps.EventOrganizerSection
 import com.example.eventease.presentation.detail.comps.EventParticipantsSection
-import com.example.eventease.ui.theme.EventeaseTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailEventScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: DetailEventViewModel
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    val isAttending by viewModel.isAttending.collectAsState()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -46,81 +49,131 @@ fun DetailEventScreen(
             )
         },
         bottomBar = {
-            Surface(
-                shadowElevation = 8.dp,
-                color = MaterialTheme.colorScheme.surface
-            ) {
-                Button(
-                    onClick = { /* TODO: Handle Attend Click */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .height(50.dp),
-                    shape = RoundedCornerShape(12.dp)
+            if (uiState is DetailEventState.Success) {
+                val buttonText = if (isAttending) "Cancel Attendance" else "Attend Later"
+
+                Surface(
+                    shadowElevation = 8.dp,
+                    color = MaterialTheme.colorScheme.surface
                 ) {
-                    Text(
-                        text = "Attend Later",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Button(
+                        onClick = {
+                            if (isAttending) {
+                                viewModel.onCancelAttendanceClicked()
+                            } else {
+                                viewModel.onAttendClicked()
+                            }
+                        },
+                        enabled = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = if (isAttending) {
+                            ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFF3F4F6),
+                                contentColor = Color(0xFF4B5563)
+                            )
+                        } else {
+                            ButtonDefaults.buttonColors(containerColor = Color(0xFF4F46E5))
+                        }
+                    ) {
+                        Text(
+                            text = buttonText,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
-        
-        LazyColumn(
+
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = innerPadding.calculateBottomPadding()),
-            contentPadding = PaddingValues(top = 0.dp)
+                .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
-            item {
-                EventHeaderImage()
-            }
-
-            item {
-                EventInfoSection(
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            item { HorizontalDivider(Modifier.padding(vertical = 16.dp)) }
-
-            item {
-                EventAboutSection(
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-            }
-
-            item { HorizontalDivider(Modifier.padding(vertical = 16.dp)) }
-
-            item {
-                EventParticipantsSection(
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-            }
-
-            item { HorizontalDivider(Modifier.padding(vertical = 16.dp)) }
-
-            item {
-                EventOrganizerSection(
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
+            when (val state = uiState) {
+                is DetailEventState.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                is DetailEventState.Error -> {
+                    Text(
+                        text = state.message,
+                        color = Color.Red,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                is DetailEventState.Success -> {
+                    val event = state.event
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(top = 0.dp)
+                    ) {
+                        item {
+                            EventHeaderImage(imageUrl = event.imageUrl)
+                        }
+                        item {
+                            EventInfoSection(
+                                event = event,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                        item {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 16.dp),
+                                color = Color(0xFFD1D5DB)
+                            )
+                        }
+                        item {
+                            EventAboutSection(
+                                description = event.description,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                        item {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 16.dp),
+                                color = Color(0xFFD1D5DB)
+                            )
+                        }
+                        item {
+                            EventParticipantsSection(
+                                participantsCount = event.participants.size,
+                                totalCapacity = event.capacity.toIntOrNull() ?: 0,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                        item {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 16.dp),
+                                color = Color(0xFFD1D5DB)
+                            )
+                        }
+                        item {
+                            EventOrganizerSection(
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                        item {
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
+                    }
+                }
             }
         }
     }
 }
 
+/*
 @Preview(showBackground = true)
 @Composable
 fun DetailEventScreenPreview() {
-    EventeaseTheme {
+   EventeaseTheme {
         DetailEventScreen(
             navController = rememberNavController()
         )
     }
-}
+}*/

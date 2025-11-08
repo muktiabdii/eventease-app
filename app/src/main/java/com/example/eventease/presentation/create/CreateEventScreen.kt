@@ -1,5 +1,9 @@
 package com.example.eventease.presentation.create
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,9 +12,9 @@ import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,19 +24,100 @@ import com.example.eventease.presentation.common.TopBar
 import com.example.eventease.presentation.create.comps.EventDateTimePicker
 import com.example.eventease.presentation.create.comps.EventFormSection
 import com.example.eventease.presentation.create.comps.PosterPickerSection
+import java.util.Calendar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateEventScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: CreateEventViewModel, // Terima ViewModel
+    modifier: Modifier = Modifier
 ) {
-    var title by rememberSaveable { mutableStateOf("") }
-    var description by rememberSaveable { mutableStateOf("") }
-    var location by rememberSaveable { mutableStateOf("") }
-    var capacity by rememberSaveable { mutableStateOf("") }
-    val dateText by rememberSaveable { mutableStateOf("mm/dd/yyyy") }
-    val timeText by rememberSaveable { mutableStateOf("--:-- --") }
+    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsState()
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val calendar = Calendar.getInstance()
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = calendar.timeInMillis
+    )
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = calendar.get(Calendar.HOUR_OF_DAY),
+        initialMinute = calendar.get(Calendar.MINUTE),
+        is24Hour = false
+    )
+
+    // Image Picker Launcher
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        viewModel.onImagePicked(uri)
+    }
+
+    // Handle UI State changes (Loading, Success, Error)
+    LaunchedEffect(uiState) {
+        when (val state = uiState) {
+            is CreateEventState.Success -> {
+                Toast.makeText(context, "Event Created Successfully!", Toast.LENGTH_SHORT).show()
+                viewModel.resetState()
+                navController.popBackStack()
+            }
+            is CreateEventState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                viewModel.resetState()
+            }
+            else -> Unit
+        }
+    }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.onDateChange(datePickerState.selectedDateMillis)
+                        showDatePicker = false
+                    }
+                ) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            modifier = Modifier.fillMaxWidth(),
+            title = { Text("Select Time", style = MaterialTheme.typography.titleLarge) },
+            text = {
+                TimePicker(
+                    state = timePickerState,
+                    modifier = Modifier.padding(16.dp)
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.onTimeChange(timePickerState.hour, timePickerState.minute)
+                        showTimePicker = false
+                    }
+                ) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+            }
+        )
+    }
 
     Scaffold(
+        modifier = modifier.fillMaxSize(),
         topBar = {
             TopBar(
                 title = "Create Event",
@@ -52,15 +137,20 @@ fun CreateEventScreen(
             item {
                 PosterPickerSection(
                     modifier = Modifier.padding(top = 16.dp),
-                    onClick = { /* TODO: Handle Image Picker */ }
+                    // Tampilkan gambar yang dipilih (jika ada)
+                    imageUri = viewModel.imageUri,
+                    onClick = {
+                        // Buka galeri gambar
+                        imagePickerLauncher.launch("image/*")
+                    }
                 )
             }
 
             item {
                 EventFormSection(
                     label = "Event Title",
-                    value = title,
-                    onValueChange = { title = it },
+                    value = viewModel.title, // Gunakan state dari ViewModel
+                    onValueChange = { viewModel.onTitleChange(it) }, // Panggil fungsi ViewModel
                     placeholder = "Enter event title"
                 )
             }
@@ -68,8 +158,8 @@ fun CreateEventScreen(
             item {
                 EventFormSection(
                     label = "Description",
-                    value = description,
-                    onValueChange = { description = it },
+                    value = viewModel.description,
+                    onValueChange = { viewModel.onDescriptionChange(it) },
                     placeholder = "Describe your event...",
                     multiLine = true
                 )
@@ -78,8 +168,8 @@ fun CreateEventScreen(
             item {
                 EventFormSection(
                     label = "Location",
-                    value = location,
-                    onValueChange = { location = it },
+                    value = viewModel.location,
+                    onValueChange = { viewModel.onLocationChange(it) },
                     placeholder = "Enter event location",
                     leadingIcon = Icons.Outlined.LocationOn
                 )
@@ -87,18 +177,18 @@ fun CreateEventScreen(
 
             item {
                 EventDateTimePicker(
-                    dateText = dateText,
-                    timeText = timeText,
-                    onDateClick = { /* TODO: Show Date Picker */ },
-                    onTimeClick = { /* TODO: Show Time Picker */ }
+                    dateText = viewModel.dateText, // TODO: Implement date/time picker logic
+                    timeText = viewModel.timeText,
+                    onDateClick = { showDatePicker = true },
+                    onTimeClick = { showTimePicker = true }
                 )
             }
 
             item {
                 EventFormSection(
                     label = "Capacity",
-                    value = capacity,
-                    onValueChange = { capacity = it },
+                    value = viewModel.capacity,
+                    onValueChange = { viewModel.onCapacityChange(it) },
                     placeholder = "Maximum attendees",
                     leadingIcon = Icons.Outlined.Group
                 )
@@ -107,7 +197,9 @@ fun CreateEventScreen(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { /* TODO: Handle Save Event */ },
+                    // Panggil saveEvent di ViewModel
+                    onClick = { viewModel.saveEvent() },
+                    enabled = uiState != CreateEventState.Loading, // Nonaktifkan saat loading
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -116,20 +208,18 @@ fun CreateEventScreen(
                         containerColor = Color(0xFF4F46E5)
                     )
                 ) {
-                    Text(
-                        text = "Save Event",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    if (uiState == CreateEventState.Loading) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    } else {
+                        Text(
+                            text = "Save Event",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CreateEventScreenPreview() {
-    CreateEventScreen(navController = rememberNavController())
 }

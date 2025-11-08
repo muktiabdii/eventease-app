@@ -12,7 +12,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun EventAboutSection(modifier: Modifier = Modifier) {
+fun EventAboutSection(
+    description: String, // <-- Terima deskripsi
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -23,17 +26,7 @@ fun EventAboutSection(modifier: Modifier = Modifier) {
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "Join us for the most anticipated technology " +
-                    "conference of the year! The Tech Innovation " +
-                    "Summit brings together industry leaders, " +
-                    "entrepreneurs, and innovators to explore the " +
-                    "latest trends in artificial intelligence, " +
-                    "blockchain, and emerging technologies.\n\n" +
-                    "This full-day event features keynote " +
-                    "presentations, interactive workshops, " +
-                    "networking sessions, and product " +
-                    "demonstrations from cutting-edge startups " +
-                    "and established tech giants.",
+            text = description, // <-- Tampilkan deskripsi dinamis
             style = MaterialTheme.typography.bodyMedium,
             lineHeight = 22.sp
         )

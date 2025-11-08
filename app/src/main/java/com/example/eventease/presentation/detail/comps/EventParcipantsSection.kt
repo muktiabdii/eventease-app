@@ -19,10 +19,21 @@ import androidx.compose.ui.unit.dp
 import com.example.eventease.R
 
 @Composable
-fun EventParticipantsSection(modifier: Modifier = Modifier) {
-    val totalParticipants = 300
-    val currentParticipants = 248
-    val progress = currentParticipants.toFloat() / totalParticipants
+fun EventParticipantsSection(
+    participantsCount: Int,
+    totalCapacity: Int,
+    modifier: Modifier = Modifier
+) {
+    val progress = if (totalCapacity > 0) {
+        participantsCount.toFloat() / totalCapacity.toFloat()
+    } else {
+        0f
+    }
+    val spotsRemaining = totalCapacity - participantsCount
+
+    val maxAvatarsToShow = 4
+    val avatarsInList = participantsCount.coerceAtMost(maxAvatarsToShow)
+    val remainingCount = (participantsCount - avatarsInList).coerceAtLeast(0)
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -39,10 +50,10 @@ fun EventParticipantsSection(modifier: Modifier = Modifier) {
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "$currentParticipants/$totalParticipants",
+                text = "$participantsCount/$totalCapacity",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primary
+                color = (Color(0xFF6B7280))
             )
         }
 
@@ -50,31 +61,37 @@ fun EventParticipantsSection(modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            ParticipantAvatar(R.drawable.avatar)
-            ParticipantAvatar(R.drawable.avatar)
-            ParticipantAvatar(R.drawable.avatar)
-            ParticipantAvatar(R.drawable.avatar)
 
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondaryContainer),
-                contentAlignment = Alignment.Center
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(-10.dp)
             ) {
-                Text(
-                    text = "+${currentParticipants - 4}",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold
-                )
+                repeat(avatarsInList) {
+                    ParticipantAvatar(R.drawable.avatar)
+                }
             }
 
-            Text(
-                text = "and ${currentParticipants - 4} others are going",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 4.dp)
-            )
+            if (remainingCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFF3F4F6)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "+$remainingCount",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Text(
+                    text = "and $remainingCount others are going",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
         }
 
         LinearProgressIndicator(
@@ -82,11 +99,13 @@ fun EventParticipantsSection(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(8.dp)
-                .clip(RoundedCornerShape(4.dp))
+                .clip(RoundedCornerShape(4.dp)),
+            color = Color(0xFF4F46E5),
+            trackColor = Color(0xFFF3F4F6)
         )
 
         Text(
-            text = "${totalParticipants - currentParticipants} spots remaining",
+            text = "$spotsRemaining spots remaining",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Medium
@@ -102,7 +121,7 @@ private fun ParticipantAvatar(drawableRes: Int) {
         modifier = Modifier
             .size(32.dp)
             .clip(CircleShape)
-            .border(1.dp, Color.White, CircleShape),
+            .border(2.dp, Color.White, CircleShape),
         contentScale = ContentScale.Crop
     )
 }
