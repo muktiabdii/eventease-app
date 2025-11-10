@@ -53,6 +53,7 @@ fun TopBar(
         actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.White
-        )
+        ),
+        windowInsets = WindowInsets(0.dp)
     )
 }

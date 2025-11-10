@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -78,7 +79,6 @@ class MainActivity : ComponentActivity() {
 
                 val showBottomBar = currentRoute in screensWithBottomBar
 
-                @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
@@ -102,6 +102,8 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController,
                         startDestination = NavDestination.SPLASH,
+
+                        modifier = Modifier.padding(innerPadding)
                     ) {
                         composable(NavDestination.SPLASH) {
                             SplashScreen(
@@ -151,6 +153,7 @@ class MainActivity : ComponentActivity() {
                         composable(NavDestination.HOME) {
                             val homeViewModel: HomeViewModel = viewModel(factory = viewModelFactory)
                             HomeScreen(
+                                modifier = Modifier.fillMaxSize(),
                                 viewModel = homeViewModel,
                                 onNavigateToCreate = {
                                     navController.navigate(NavDestination.CREATE_EVENT)
