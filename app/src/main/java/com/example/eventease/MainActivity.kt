@@ -21,6 +21,8 @@ import com.example.eventease.data.datastore.UserPreferencesManager
 import com.example.eventease.data.repository.AuthRepositoryImpl
 import com.example.eventease.data.repository.EventRepositoryImpl
 import com.example.eventease.data.repository.UserRepositoryImpl
+import com.example.eventease.di.Injection
+import com.example.eventease.di.ViewModelFactory
 import com.example.eventease.domain.usecase.AuthUseCase
 import com.example.eventease.domain.usecase.EventUseCase
 import com.example.eventease.domain.usecase.UserUseCase
@@ -32,7 +34,6 @@ import com.example.eventease.presentation.create.CreateEventScreen
 import com.example.eventease.presentation.create.CreateEventViewModel
 import com.example.eventease.presentation.detail.DetailEventScreen
 import com.example.eventease.presentation.detail.DetailEventViewModel
-import com.example.eventease.di.ViewModelFactory
 import com.example.eventease.presentation.home.HomeScreen
 import com.example.eventease.presentation.home.HomeViewModel
 import com.example.eventease.presentation.myevents.MyEventsScreen
@@ -44,39 +45,52 @@ import com.example.eventease.presentation.splash.SplashViewModel
 import com.example.eventease.ui.theme.EventeaseTheme
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var viewModelFactory: ViewModelFactory
+
     @SuppressLint("ViewModelConstructorInComposable")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val apiService = Injection.provideApiService(applicationContext)
+        val userPreferencesManager = Injection.provideUserPreferencesManager(applicationContext)
+
+        val userRepo = UserRepositoryImpl(
+            userPreferencesManager = userPreferencesManager,
+            context = applicationContext,
+            apiService = apiService
+        )
+        val authRepo = AuthRepositoryImpl(
+            apiService = apiService,
+            userPreferencesManager = userPreferencesManager
+        )
+        val eventRepo = EventRepositoryImpl(
+            context = applicationContext,
+            apiService = apiService
+        )
+
+        val userUseCase = UserUseCase(userRepo)
+        val authUseCase = AuthUseCase(authRepo)
+        val eventUseCase = EventUseCase(eventRepo)
+
+        viewModelFactory = ViewModelFactory(
+            authUseCase = authUseCase,
+            userUseCase = userUseCase,
+            eventUseCase = eventUseCase
+        )
+
         setContent {
             val navController = rememberNavController()
             EventeaseTheme {
 
-                val userRepo = UserRepositoryImpl(UserPreferencesManager(this), context = this)
-                val userUseCase = UserUseCase(userRepo)
-                val authRepo = AuthRepositoryImpl()
-                val authUseCase = AuthUseCase(authRepo)
-                val authViewModel = AuthViewModel(authUseCase, userUseCase)
-                val splashViewModel = SplashViewModel(userUseCase)
-                val eventRepo = EventRepositoryImpl(applicationContext)
-                val eventUseCase = EventUseCase(eventRepo)
-                val homeViewModel = HomeViewModel(eventUseCase)
-                val createEventViewModel = CreateEventViewModel(eventUseCase)
-                val userViewModel = UserViewModel(userUseCase)
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
-
-                val viewModelFactory = ViewModelFactory(
-                    authUseCase = authUseCase,
-                    userUseCase = userUseCase,
-                    eventUseCase = eventUseCase
-                )
 
                 val screensWithBottomBar = listOf(
                     NavDestination.HOME,
                     NavDestination.MY_EVENTS,
                     NavDestination.PROFILE
                 )
-
                 val showBottomBar = currentRoute in screensWithBottomBar
 
                 Scaffold(
@@ -102,10 +116,10 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController,
                         startDestination = NavDestination.SPLASH,
-
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable(NavDestination.SPLASH) {
+                            val splashViewModel: SplashViewModel = viewModel(factory = viewModelFactory)
                             SplashScreen(
                                 viewModel = splashViewModel,
                                 onNavigateToHome = {
@@ -121,6 +135,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(NavDestination.LOGIN) {
+                            val authViewModel: AuthViewModel = viewModel(factory = viewModelFactory)
                             LoginScreen(
                                 onNavigateToHome = {
                                     navController.navigate(NavDestination.HOME) {
@@ -136,6 +151,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(NavDestination.REGISTER) {
+                            val authViewModel: AuthViewModel = viewModel(factory = viewModelFactory)
                             RegisterScreen(
                                 onLoginClick = {
                                     navController.navigate(NavDestination.LOGIN) {
@@ -165,6 +181,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(NavDestination.CREATE_EVENT) {
+                            val createEventViewModel: CreateEventViewModel = viewModel(factory = viewModelFactory)
                             CreateEventScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 navController = navController,
@@ -185,7 +202,6 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(NavDestination.MY_EVENTS) {
                             val myEventsViewModel: MyEventsViewModel = viewModel(factory = viewModelFactory)
-
                             MyEventsScreen(
                                 navController = navController,
                                 viewModel = myEventsViewModel,
@@ -194,6 +210,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(NavDestination.PROFILE) {
+                            val userViewModel: UserViewModel = viewModel(factory = viewModelFactory)
                             ProfileScreen(
                                 navController = navController,
                                 rootNavController = navController,

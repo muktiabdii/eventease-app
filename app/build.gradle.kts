@@ -60,20 +60,17 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // firebase
-    implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
-    implementation("com.google.firebase:firebase-database-ktx:21.0.0")
-    implementation("com.google.firebase:firebase-firestore-ktx:25.1.0")
-
     // datastore
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     // icons
     implementation("androidx.compose.material:material-icons-extended-android")
 
-    // cloudinary
-    implementation("com.cloudinary:cloudinary-android:2.4.0")
-
     // coil
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    //retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 }

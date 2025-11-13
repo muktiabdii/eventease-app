@@ -61,6 +61,16 @@ class MyEventsViewModel(private val eventUseCase: EventUseCase) : ViewModel() {
                     it.copy(error = error.message ?: "Failed to delete event")
                 }
             }
+
+            result.onSuccess {
+                _uiState.update { currentState ->
+                    val updatedCreatedEvents = currentState.createdEvents.filter { it.id != event.id }
+
+                    currentState.copy(
+                        createdEvents = updatedCreatedEvents
+                    )
+                }
+            }
         }
     }
 }

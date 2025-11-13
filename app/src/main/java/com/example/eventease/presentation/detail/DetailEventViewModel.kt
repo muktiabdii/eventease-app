@@ -6,15 +6,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.eventease.NavDestination
 import com.example.eventease.data.domain.model.Event
 import com.example.eventease.domain.model.User
-import com.example.eventease.domain.repository.UserRepository
 import com.example.eventease.domain.usecase.EventUseCase
 import com.example.eventease.domain.usecase.UserUseCase
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 sealed class DetailEventState {
@@ -22,7 +21,8 @@ sealed class DetailEventState {
     data class Success(
         val event: Event,
         val organizer: User?,
-        val participants: List<User>
+        val participants: List<User>,
+        val isCreator: Boolean
     ) : DetailEventState()
     data class Error(val message: String) : DetailEventState()
 }
@@ -34,7 +34,7 @@ class DetailEventViewModel(
 ) : ViewModel() {
 
     private val eventId: String = savedStateHandle[NavDestination.EVENT_DETAIL_ID_ARG] ?: ""
-    private val currentUserId: String? = Firebase.auth.currentUser?.uid
+    private var currentUserId: String? = null
 
     private val _uiState = MutableStateFlow<DetailEventState>(DetailEventState.Loading)
     val uiState: StateFlow<DetailEventState> = _uiState.asStateFlow()
@@ -42,26 +42,37 @@ class DetailEventViewModel(
     private val _isAttending = MutableStateFlow(false)
     val isAttending: StateFlow<Boolean> = _isAttending.asStateFlow()
 
+    private val _isAttendingLoading = MutableStateFlow(false)
+    val isAttendingLoading: StateFlow<Boolean> = _isAttendingLoading.asStateFlow()
+
     init {
-        fetchEventDetails()
+        viewModelScope.launch {
+            currentUserId = userUseCase.getUserUidFlow().firstOrNull()
+            fetchEventDetails(showLoadingScreen = true)
+        }
     }
 
-    private fun fetchEventDetails() {
+    private fun fetchEventDetails(showLoadingScreen: Boolean = false) {
         viewModelScope.launch {
+            if (showLoadingScreen) {
+                _uiState.value = DetailEventState.Loading
+            }
+
             eventUseCase.getEventDetails(eventId).collectLatest { result ->
                 result.onSuccess { event ->
                     _isAttending.value = event.participants.contains(currentUserId)
 
-                    // Ambil data user organizer & participant
                     val organizer = userUseCase.getUserFromRemote(event.creatorId)
                     val participants = event.participants.mapNotNull { uid ->
                         userUseCase.getUserFromRemote(uid)
                     }
+                    val isCurrentUserTheCreator = (event.creatorId == currentUserId)
 
                     _uiState.value = DetailEventState.Success(
                         event = event,
                         organizer = organizer,
-                        participants = participants
+                        participants = participants,
+                        isCreator = isCurrentUserTheCreator
                     )
                 }.onFailure {
                     _uiState.value = DetailEventState.Error(it.message ?: "Failed to load event")
@@ -73,7 +84,35 @@ class DetailEventViewModel(
     fun onAttendClicked() {
         viewModelScope.launch {
             if (!_isAttending.value) {
-                eventUseCase.attendEvent(eventId)
+                _isAttendingLoading.value = true
+
+                val attendResult = eventUseCase.attendEvent(eventId)
+
+                if (attendResult.isSuccess) {
+                    val refreshResult = eventUseCase.getEventDetails(eventId).first()
+
+                    refreshResult.onSuccess { event ->
+                        _isAttending.value = event.participants.contains(currentUserId)
+                        val organizer = userUseCase.getUserFromRemote(event.creatorId)
+                        val participants = event.participants.mapNotNull { uid ->
+                            userUseCase.getUserFromRemote(uid)
+                        }
+                        val isCurrentUserTheCreator = (event.creatorId == currentUserId)
+
+                        _uiState.value = DetailEventState.Success(
+                            event = event,
+                            organizer = organizer,
+                            participants = participants,
+                            isCreator = isCurrentUserTheCreator
+                        )
+                    }.onFailure {
+                        _uiState.value = DetailEventState.Error(it.message ?: "Failed to refresh details")
+                    }
+                } else {
+                    _uiState.value = DetailEventState.Error(attendResult.exceptionOrNull()?.message ?: "Failed to attend")
+                }
+
+                _isAttendingLoading.value = false
             }
         }
     }
@@ -81,7 +120,35 @@ class DetailEventViewModel(
     fun onCancelAttendanceClicked() {
         viewModelScope.launch {
             if (_isAttending.value) {
-                eventUseCase.cancelAttendance(eventId)
+                _isAttendingLoading.value = true
+
+                val cancelResult = eventUseCase.cancelAttendance(eventId)
+
+                if (cancelResult.isSuccess) {
+                    val refreshResult = eventUseCase.getEventDetails(eventId).first()
+
+                    refreshResult.onSuccess { event ->
+                        _isAttending.value = event.participants.contains(currentUserId)
+                        val organizer = userUseCase.getUserFromRemote(event.creatorId)
+                        val participants = event.participants.mapNotNull { uid ->
+                            userUseCase.getUserFromRemote(uid)
+                        }
+                        val isCurrentUserTheCreator = (event.creatorId == currentUserId)
+
+                        _uiState.value = DetailEventState.Success(
+                            event = event,
+                            organizer = organizer,
+                            participants = participants,
+                            isCreator = isCurrentUserTheCreator
+                        )
+                    }.onFailure {
+                        _uiState.value = DetailEventState.Error(it.message ?: "Failed to refresh details")
+                    }
+                } else {
+                    _uiState.value = DetailEventState.Error(cancelResult.exceptionOrNull()?.message ?: "Failed to cancel")
+                }
+
+                _isAttendingLoading.value = false
             }
         }
     }

@@ -16,12 +16,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale // <-- Import ditambahkan
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.SubcomposeAsyncImage // <-- Import Coil
+import coil.compose.SubcomposeAsyncImage
 import com.example.eventease.data.domain.model.Event
+// --- TAMBAHKAN IMPORT INI ---
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
+// -----------------------------
 
 @Composable
 fun EventCard(
@@ -51,14 +56,15 @@ fun EventCard(
                 onClick = onDelete,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .size(24.dp)
-                    .background(Color(0xFFE53935), CircleShape)
+                    .padding(8.dp) // Beri sedikit padding agar tidak terpotong
+                    .size(32.dp) // Sedikit lebih besar
+                    .background(Color(0xFFE53935).copy(alpha = 0.8f), CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,
                     contentDescription = "Delete Event",
                     tint = Color.White,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(18.dp) // Sesuaikan ikon
                 )
             }
         }
@@ -131,12 +137,13 @@ private fun EventContent(
             text = event.title,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = Color.Black,
+            maxLines = 1, // Pastikan judul tidak terlalu panjang
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        EventDateInfo(date = event.date)
+        EventDateInfo(date = event.date) // <-- Panggil fungsi yang sudah diformat
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -163,8 +170,27 @@ private fun EventContent(
     }
 }
 
+// --- FUNGSI INI DIUBAH TOTAL ---
 @Composable
 private fun EventDateInfo(date: String) {
+    // Format input dari API: "2025-11-20T14:30:00.000Z"
+    val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
+    inputFormat.timeZone = TimeZone.getTimeZone("UTC")
+
+    // Format output yang Anda inginkan: "July 15, 2024"
+    val outputFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US)
+
+    val formattedDate = try {
+        val dateObject = inputFormat.parse(date)
+        if (dateObject != null) {
+            outputFormat.format(dateObject)
+        } else {
+            "Invalid Date" // Fallback
+        }
+    } catch (e: Exception) {
+        "Invalid Date" // Fallback jika parsing gagal
+    }
+
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = Icons.Outlined.DateRange,
@@ -174,12 +200,13 @@ private fun EventDateInfo(date: String) {
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
-            text = date,
+            text = formattedDate, // Gunakan tanggal yang sudah diformat
             fontSize = 14.sp,
             color = Color.Gray
         )
     }
 }
+// -----------------------------
 
 @Composable
 private fun EventLocationInfo(location: String) {
@@ -194,7 +221,8 @@ private fun EventLocationInfo(location: String) {
         Text(
             text = location,
             fontSize = 14.sp,
-            color = Color.Gray
+            color = Color.Gray,
+            maxLines = 1 // Pastikan lokasi tidak terlalu panjang
         )
     }
 }

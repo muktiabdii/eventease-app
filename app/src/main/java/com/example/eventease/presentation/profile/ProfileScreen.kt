@@ -1,6 +1,7 @@
 package com.example.eventease.presentation.profile
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -14,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -29,6 +31,10 @@ fun ProfileScreen(
     rootNavController: NavController
 ) {
     val userState by viewModel.userState.collectAsState()
+
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
     var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -36,6 +42,20 @@ fun ProfileScreen(
         if (uri != null) {
             selectedImageUri = uri
             viewModel.setTempPhoto(uri.toString())
+        }
+    }
+
+    LaunchedEffect(uiState) {
+        when (val state = uiState) {
+            is ProfileUiState.Success -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                viewModel.resetUiState()
+            }
+            is ProfileUiState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                viewModel.resetUiState()
+            }
+            else -> Unit
         }
     }
 
@@ -89,6 +109,7 @@ fun ProfileScreen(
                                 imageUri = selectedImageUri
                             )
                         },
+                        enabled = uiState != ProfileUiState.Loading,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
@@ -97,11 +118,18 @@ fun ProfileScreen(
                             containerColor = Color(0xFF4F46E5)
                         )
                     ) {
-                        Text(
-                            text = "Save Changes",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        if (uiState == ProfileUiState.Loading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.White
+                            )
+                        } else {
+                            Text(
+                                text = "Save Changes",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
 
                     OutlinedButton(

@@ -12,6 +12,7 @@ import com.example.eventease.presentation.create.CreateEventViewModel
 import com.example.eventease.presentation.detail.DetailEventViewModel
 import com.example.eventease.presentation.home.HomeViewModel
 import com.example.eventease.presentation.myevents.MyEventsViewModel
+import com.example.eventease.presentation.profile.UserViewModel
 import com.example.eventease.presentation.splash.SplashViewModel
 
 class ViewModelFactory(
@@ -44,6 +45,9 @@ class ViewModelFactory(
             }
             modelClass.isAssignableFrom(MyEventsViewModel::class.java) -> {
                 MyEventsViewModel(eventUseCase) as T
+            }
+            modelClass.isAssignableFrom(UserViewModel::class.java) -> {
+                UserViewModel(userUseCase) as T
             }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }

@@ -16,14 +16,17 @@ class UserPreferencesManager(private val context: Context) {
         private val KEY_NAME = stringPreferencesKey("name")
         private val KEY_EMAIL = stringPreferencesKey("email")
         private val KEY_PHOTO = stringPreferencesKey("photo")
+
+        private val KEY_TOKEN = stringPreferencesKey("token")
     }
 
-    suspend fun saveUser(uid: String, name: String, email: String, photoUrl: String = "") {
+    suspend fun saveUser(uid: String, name: String, email: String, photoUrl: String = "", token: String) {
         context.dataStore.edit { preferences ->
             preferences[KEY_UID] = uid
             preferences[KEY_NAME] = name
             preferences[KEY_EMAIL] = email
             preferences[KEY_PHOTO] = photoUrl
+            preferences[KEY_TOKEN] = token
         }
     }
 
@@ -43,4 +46,5 @@ class UserPreferencesManager(private val context: Context) {
     val userName: Flow<String?> = context.dataStore.data.map { it[KEY_NAME] }
     val userEmail: Flow<String?> = context.dataStore.data.map { it[KEY_EMAIL] }
     val userPhoto: Flow<String?> = context.dataStore.data.map { it[KEY_PHOTO] }
+    val userToken: Flow<String?> = context.dataStore.data.map { it[KEY_TOKEN] }
 }

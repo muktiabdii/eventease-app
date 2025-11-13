@@ -49,40 +49,56 @@ fun DetailEventScreen(
             )
         },
         bottomBar = {
-            if (uiState is DetailEventState.Success) {
-                val buttonText = if (isAttending) "Cancel Attendance" else "Attend Later"
+            val state = uiState
 
-                Surface(
-                    shadowElevation = 8.dp,
-                    color = MaterialTheme.colorScheme.surface
-                ) {
-                    Button(
-                        onClick = {
-                            if (isAttending) {
-                                viewModel.onCancelAttendanceClicked()
-                            } else {
-                                viewModel.onAttendClicked()
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                            .height(50.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = if (isAttending) {
-                            ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFF3F4F6),
-                                contentColor = Color(0xFF4B5563)
-                            )
-                        } else {
-                            ButtonDefaults.buttonColors(containerColor = Color(0xFF4F46E5))
-                        }
-                    ) {
-                        Text(
-                            text = buttonText,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+            val isAttendingLoading by viewModel.isAttendingLoading.collectAsState()
+
+            if (state is DetailEventState.Success) {
+
+                if (!state.isCreator) {
+                    val buttonText = if (isAttending) "Cancel Attendance" else "Attend Later"
+                    val buttonColors = if (isAttending) {
+                        ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFF3F4F6),
+                            contentColor = Color(0xFF4B5563)
                         )
+                    } else {
+                        ButtonDefaults.buttonColors(containerColor = Color(0xFF4F46E5))
+                    }
+
+                    Surface(
+                        shadowElevation = 8.dp,
+                        color = MaterialTheme.colorScheme.surface
+                    ) {
+                        Button(
+                            onClick = {
+                                if (isAttending) {
+                                    viewModel.onCancelAttendanceClicked()
+                                } else {
+                                    viewModel.onAttendClicked()
+                                }
+                            },
+                            enabled = !isAttendingLoading,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .height(50.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = buttonColors
+                        ) {
+                            if (isAttendingLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = if (isAttending) Color(0xFF4B5563) else Color.White
+                                )
+                            } else {
+                                Text(
+                                    text = buttonText,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
                 }
             }

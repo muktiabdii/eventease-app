@@ -1,5 +1,6 @@
 package com.example.eventease.presentation.detail.comps
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -17,6 +18,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.eventease.data.domain.model.Event
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 @Composable
 fun EventInfoSection(
@@ -33,11 +37,22 @@ fun EventInfoSection(
             fontWeight = FontWeight.Bold
         )
 
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
+        inputFormat.timeZone = TimeZone.getTimeZone("UTC")
+
+        val outputDateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.US)
+        val outputTimeFormat = SimpleDateFormat("hh:mm aa", Locale.US)
+
         val (date, time) = try {
-            val parts = event.date.split(" at ")
-            (parts.getOrNull(0) ?: "N/A") to (parts.getOrNull(1) ?: "N/A")
+            val dateObject = inputFormat.parse(event.date)
+            if (dateObject != null) {
+                outputDateFormat.format(dateObject) to outputTimeFormat.format(dateObject)
+            } else {
+                "Invalid Date" to "Invalid Time"
+            }
         } catch (e: Exception) {
-            "N/A" to "N/A"
+            Log.e("EventDetailDebug", "Parsing gagal: ${e.message}")
+            "Invalid Date" to "Invalid Time"
         }
 
         EventInfoRow(

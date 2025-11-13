@@ -1,32 +1,41 @@
 package com.example.eventease.data.repository
 
-import android.util.Log
-import com.example.eventease.data.remote.firebase.FirebaseProvider
+import com.example.eventease.data.datastore.UserPreferencesManager
+import com.example.eventease.data.remote.ApiService
 import com.example.eventease.domain.repository.AuthRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
-class AuthRepositoryImpl: AuthRepository {
-
-    private val auth = FirebaseProvider.auth
-    private val database = FirebaseProvider.database
+class AuthRepositoryImpl(
+    private val apiService: ApiService,
+    private val userPreferencesManager: UserPreferencesManager
+): AuthRepository {
 
     override suspend fun login(
         email: String,
         password: String
-    ): String {
+    ): String = withContext(Dispatchers.IO) {
         try {
-            val result = auth.signInWithEmailAndPassword(email, password).await()
-            val uid = result.user?.uid ?: throw Exception("UID tidak ditemukan")
-            return uid
-        }
+            val request = mapOf("email" to email, "password" to password)
+            val response = apiService.login(request)
 
-        catch (e: Exception) {
-            throw Exception(getLocalizedErrorMessage(e.message))
+            val user = response.data.user
+            val token = response.data.token
+
+            userPreferencesManager.saveUser(
+                uid = user.id.toString(),
+                name = user.name,
+                email = user.email,
+                photoUrl = user.profilePicture ?: "",
+                token = token
+            )
+
+            return@withContext user.id.toString()
+
+        } catch (e: Exception) {
+            throw Exception("Login Gagal: ${e.message}")
         }
     }
-
 
     override suspend fun register(
         name: String,
@@ -35,41 +44,11 @@ class AuthRepositoryImpl: AuthRepository {
         passwordConfirmation: String
     ): Unit = withContext(Dispatchers.IO) {
         try {
-            val result = auth.createUserWithEmailAndPassword(email, password).await()
-            val user = result.user ?: throw Exception("Gagal membuat akun")
-
-            val userId = user.uid
-            val userRef = database.child("users").child(userId)
-            val userData = mapOf(
-                "uid" to userId,
-                "name" to name,
-                "email" to email
-            )
-
-            userRef.setValue(userData).await()
-
+            val request = mapOf("name" to name, "email" to email, "password" to password)
+            apiService.register(request)
         } catch (e: Exception) {
-            auth.currentUser?.delete()?.await()
-            throw Exception(getLocalizedErrorMessage(e.message))
+            throw Exception("Registrasi Gagal: ${e.message}")
         }
     }
 
-
-    private fun getLocalizedErrorMessage(errorMessage: String?): String {
-        return when {
-            errorMessage?.contains("The email address is badly formatted") == true ->
-                "Format email salah"
-
-            errorMessage?.contains("The supplied auth credential is incorrect, malformed or has expired.") == true ->
-                "Silahkan periksa kembali email dan password Anda"
-
-            errorMessage?.contains("A network error") == true ->
-                "Terjadi kesalahan jaringan"
-
-            errorMessage?.contains("The email address is already in use by another account") == true ->
-                "Email sudah terdaftar"
-
-            else -> errorMessage ?: "Terjadi kesalahan saat login"
-        }
-    }
 }

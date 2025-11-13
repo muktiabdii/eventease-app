@@ -32,17 +32,26 @@ class CreateEventViewModel(private val eventUseCase: EventUseCase) : ViewModel()
     var timeText by mutableStateOf("--:-- --")
     var imageUri by mutableStateOf<Uri?>(null)
 
+    private var selectedDateMillis: Long? = null
+    private var selectedHour: Int? = null
+    private var selectedMinute: Int? = null
+
     private val _uiState = MutableStateFlow<CreateEventState>(CreateEventState.Idle)
     val uiState: StateFlow<CreateEventState> = _uiState
 
     fun onDateChange(newDateMillis: Long?) {
         if (newDateMillis != null) {
+            selectedDateMillis = newDateMillis
+
             val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.US)
             dateText = dateFormatter.format(newDateMillis)
         }
     }
 
     fun onTimeChange(hour: Int, minute: Int) {
+        selectedHour = hour
+        selectedMinute = minute
+
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
@@ -68,23 +77,34 @@ class CreateEventViewModel(private val eventUseCase: EventUseCase) : ViewModel()
                 _uiState.value = CreateEventState.Error("Please pick an event poster")
                 return@launch
             }
-            if (dateText == "mm/dd/yyyy" || timeText == "--:-- --") {
+
+            if (selectedDateMillis == null || selectedHour == null || selectedMinute == null) {
                 _uiState.value = CreateEventState.Error("Please select a valid date and time")
                 return@launch
             }
 
-            if (description.trim().length < 800) {
+            if (description.trim().length < 200) {
                 _uiState.value = CreateEventState.Error("Description must be at least 800 characters.")
                 return@launch
             }
 
             _uiState.value = CreateEventState.Loading
 
+            val finalCalendar = Calendar.getInstance().apply {
+                timeInMillis = selectedDateMillis!!
+                set(Calendar.HOUR_OF_DAY, selectedHour!!)
+                set(Calendar.MINUTE, selectedMinute!!)
+                set(Calendar.SECOND, 0)
+            }
+
+            val mysqlDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
+            val backendDateString = mysqlDateFormat.format(finalCalendar.time)
+
             val event = Event(
                 title = title,
                 description = description,
                 location = location,
-                date = "$dateText at $timeText",
+                date = backendDateString,
                 capacity = capacity
             )
 
