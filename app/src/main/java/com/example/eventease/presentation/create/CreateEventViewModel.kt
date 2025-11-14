@@ -84,7 +84,7 @@ class CreateEventViewModel(private val eventUseCase: EventUseCase) : ViewModel()
             }
 
             if (description.trim().length < 200) {
-                _uiState.value = CreateEventState.Error("Description must be at least 800 characters.")
+                _uiState.value = CreateEventState.Error("Description must be at least 200 characters.")
                 return@launch
             }
 
