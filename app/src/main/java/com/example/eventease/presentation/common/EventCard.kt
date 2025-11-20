@@ -22,11 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.eventease.data.domain.model.Event
-// --- TAMBAHKAN IMPORT INI ---
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
-// -----------------------------
 
 @Composable
 fun EventCard(
@@ -56,15 +54,15 @@ fun EventCard(
                 onClick = onDelete,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(8.dp) // Beri sedikit padding agar tidak terpotong
-                    .size(32.dp) // Sedikit lebih besar
+                    .padding(8.dp)
+                    .size(32.dp)
                     .background(Color(0xFFE53935).copy(alpha = 0.8f), CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,
                     contentDescription = "Delete Event",
                     tint = Color.White,
-                    modifier = Modifier.size(18.dp) // Sesuaikan ikon
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
@@ -138,12 +136,12 @@ private fun EventContent(
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black,
-            maxLines = 1, // Pastikan judul tidak terlalu panjang
+            maxLines = 1,
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        EventDateInfo(date = event.date) // <-- Panggil fungsi yang sudah diformat
+        EventDateInfo(date = event.date)
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -170,14 +168,11 @@ private fun EventContent(
     }
 }
 
-// --- FUNGSI INI DIUBAH TOTAL ---
 @Composable
 private fun EventDateInfo(date: String) {
-    // Format input dari API: "2025-11-20T14:30:00.000Z"
     val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
     inputFormat.timeZone = TimeZone.getTimeZone("UTC")
 
-    // Format output yang Anda inginkan: "July 15, 2024"
     val outputFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US)
 
     val formattedDate = try {
@@ -185,10 +180,10 @@ private fun EventDateInfo(date: String) {
         if (dateObject != null) {
             outputFormat.format(dateObject)
         } else {
-            "Invalid Date" // Fallback
+            "Invalid Date"
         }
     } catch (e: Exception) {
-        "Invalid Date" // Fallback jika parsing gagal
+        "Invalid Date"
     }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -200,13 +195,12 @@ private fun EventDateInfo(date: String) {
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
-            text = formattedDate, // Gunakan tanggal yang sudah diformat
+            text = formattedDate,
             fontSize = 14.sp,
             color = Color.Gray
         )
     }
 }
-// -----------------------------
 
 @Composable
 private fun EventLocationInfo(location: String) {
@@ -222,7 +216,7 @@ private fun EventLocationInfo(location: String) {
             text = location,
             fontSize = 14.sp,
             color = Color.Gray,
-            maxLines = 1 // Pastikan lokasi tidak terlalu panjang
+            maxLines = 1
         )
     }
 }

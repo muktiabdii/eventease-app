@@ -4,7 +4,6 @@ import com.example.eventease.data.remote.dto.*
 import retrofit2.http.*
 
 interface ApiService {
-
     @POST("api/users/register")
     suspend fun register(@Body request: Map<String, String>): AuthResponse
 

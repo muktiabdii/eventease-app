@@ -10,7 +10,6 @@ import com.example.eventease.domain.model.User
 import com.example.eventease.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.tasks.await
 
 class UserRepositoryImpl(
     private val userPreferencesManager: UserPreferencesManager,
